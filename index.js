@@ -45,14 +45,17 @@ JSONRpc.prototype._onConnect = function () {
     params: this._params,
     id: this._id,
   }
-  this._socket.end(JSON.stringify(body))
+  this._socket.write(JSON.stringify(body) + '\n');
 }
 
 JSONRpc.prototype._onDrain = function () {
+  logger.info('socket: on _onDrain')
   this._socket.resume()
 }
 
 JSONRpc.prototype._onError = function (err) {
+  clearTimeout(this._timer)
+  logger.error('socket: on _onError ' + err.stack)
   this._reject(err)
 }
 
@@ -62,6 +65,7 @@ JSONRpc.prototype._onTimeout = function (from) {
 }
 
 JSONRpc.prototype._onData = function (chunk) {
+  logger.info('socket: on _onData' + chunk)
   this._byteLength += chunk.byteLength
   if (this._byteLength > chunkMaxLength) {
     this._socket.destroy(new Error('too many chunks'))
@@ -98,7 +102,9 @@ JSONRpc.prototype._parseData = function () {
   return true
 }
 
-
+/**
+ * make a tcp call
+ */
 module.exports = function (locationInfo, method, params) {
   var rpc = new JSONRpc(locationInfo.port, locationInfo.hostname)
   return rpc.makeCall(method, params)
