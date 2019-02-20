@@ -1,4 +1,4 @@
-# json-rpc-lite
+# JSON-RPC-Lite
 a demo
 
 how to use?
